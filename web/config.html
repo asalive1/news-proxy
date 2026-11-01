@@ -1,0 +1,220 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>News-Proxy configuration</title>
+<style>
+  :root { color-scheme: light dark; --bg:#f4f5f7; --card:#fff; --text:#1f2933; --muted:#6b7280; --line:#d8dce3; --accent:#1e5aa8; --bad:#b91c1c; --good:#15803d; --warn:#b45309; }
+  @media (prefers-color-scheme: dark) { :root { --bg:#16181d; --card:#20242b; --text:#e5e7eb; --muted:#9ca3af; --line:#363b45; --accent:#6aa7f0; --bad:#f87171; --good:#4ade80; --warn:#fbbf24; } }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--text); font:14px/1.45 "Segoe UI", system-ui, Arial, sans-serif; }
+  header { display:flex; align-items:center; gap:12px; padding:14px 24px; background:var(--card); border-bottom:1px solid var(--line); }
+  header h1 { margin:0; font-size:18px; flex:1; }
+  header .ver { color:var(--muted); font-size:12px; }
+  main { max-width:1200px; margin:0 auto; padding:20px 24px 60px; display:grid; gap:20px; }
+  section { background:var(--card); border:1px solid var(--line); border-radius:8px; padding:16px 18px; }
+  h2 { margin:0 0 12px; font-size:15px; }
+  label { display:block; font-weight:600; margin-bottom:3px; }
+  input[type=text], input[type=url], input[type=number], input[type=password] { width:100%; padding:7px 9px; border:1px solid var(--line); border-radius:5px; background:transparent; color:inherit; font:inherit; }
+  .grid { display:grid; gap:12px; grid-template-columns:repeat(auto-fit,minmax(220px,1fr)); }
+  .hint { color:var(--muted); font-size:12px; margin-top:3px; }
+  button { padding:7px 14px; border:1px solid var(--line); border-radius:5px; background:transparent; color:inherit; font:inherit; cursor:pointer; }
+  button:hover { border-color:var(--accent); }
+  button.primary { background:var(--accent); border-color:var(--accent); color:#fff; }
+  button.danger:hover { border-color:var(--bad); color:var(--bad); }
+  button:disabled { opacity:.5; cursor:default; }
+  .row { display:flex; gap:8px; align-items:center; flex-wrap:wrap; margin-top:12px; }
+  table { width:100%; border-collapse:collapse; }
+  th, td { text-align:left; padding:8px 6px; border-bottom:1px solid var(--line); vertical-align:top; }
+  th { font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+  td.url { word-break:break-all; max-width:280px; color:var(--muted); font-size:12px; }
+  .pill { display:inline-block; padding:1px 7px; margin:1px 3px 1px 0; border-radius:10px; background:var(--bg); border:1px solid var(--line); font-size:12px; }
+  .ok { color:var(--good); } .bad { color:var(--bad); } .warn { color:var(--warn); }
+  .actions { white-space:nowrap; } .actions button { padding:3px 9px; font-size:12px; }
+  #message { position:sticky; top:0; z-index:5; padding:10px 24px; display:none; font-weight:600; }
+  #message.error { display:block; background:var(--bad); color:#fff; } #message.info { display:block; background:var(--good); color:#06260f; }
+  code { background:var(--bg); padding:1px 5px; border-radius:4px; }
+  .empty { color:var(--muted); padding:14px 0; }
+</style>
+</head>
+<body>
+<div id="message" role="status"></div>
+<header>
+  <h1>News-Proxy configuration</h1>
+  <span id="health" class="ver">…</span>
+  <span class="ver" id="version"></span>
+</header>
+<main>
+  <section>
+    <h2 id="form-title">Add a news source</h2>
+    <form id="source-form" autocomplete="off">
+      <div class="grid">
+        <div><label for="f-name">Friendly name *</label><input id="f-name" type="text" maxlength="100" required placeholder="BBC News"></div>
+        <div><label for="f-url">Feed URL *</label><input id="f-url" type="url" required placeholder="https://feeds.bbci.co.uk/news/rss.xml"></div>
+        <div><label for="f-group">Group</label><input id="f-group" type="text" list="groups" placeholder="National News"><datalist id="groups"></datalist></div>
+        <div><label for="f-categories">Categories</label><input id="f-categories" type="text" placeholder="Politics, Business, Breaking News"><div class="hint">Comma separated topics this source covers. Optional.</div></div>
+      </div>
+      <div class="row">
+        <button class="primary" type="submit" id="f-save">Add source</button>
+        <button type="button" id="f-cancel" hidden>Cancel edit</button>
+      </div>
+    </form>
+  </section>
+
+  <section>
+    <div class="row" style="margin:0 0 8px">
+      <h2 style="margin:0;flex:1">News sources (<span id="count">0</span>)</h2>
+      <button id="refresh-all" type="button">Refresh all now</button>
+      <a href="/sources.json" target="_blank" rel="noopener"><button type="button">View sources.json</button></a>
+    </div>
+    <div id="table-wrap"></div>
+    <div class="hint">Widgets read <code>/sources.json</code> to discover feeds and fetch each one from its Feed path. Changes are live immediately; no restart is needed.</div>
+  </section>
+
+  <section>
+    <h2>Settings</h2>
+    <form id="settings-form" autocomplete="off">
+      <div class="grid">
+        <div><label for="s-interval">Check for updates every (minutes)</label><input id="s-interval" type="number" min="1" max="1440" step="1" required><div class="hint">Default 10. Applies immediately.</div></div>
+        <div><label for="s-password">Admin password</label><input id="s-password" type="password" autocomplete="new-password" placeholder="Leave blank to keep the current setting"><div class="hint" id="password-hint"></div></div>
+        <div><label>Listening on</label><div id="s-listen" class="hint" style="font-size:14px;color:inherit"></div><div class="hint">Set by the installer or the PORT / BIND_ADDRESS environment variables; changing it needs a service restart.</div></div>
+      </div>
+      <div class="row"><label style="font-weight:400"><input id="s-private" type="checkbox"> Allow private/internal feeds (localhost and LAN addresses)</label></div>
+      <div class="row">
+        <button class="primary" type="submit">Save settings</button>
+        <button type="button" id="s-clear-password" class="danger" hidden>Remove admin password</button>
+      </div>
+    </form>
+  </section>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+let state = null, editingId = null;
+
+async function api(method, path, body) {
+  const res = await fetch('/config/api' + path, {
+    method, headers: {'X-Requested-With': 'news-proxy', ...(body ? {'Content-Type': 'application/json'} : {})},
+    body: body ? JSON.stringify(body) : undefined, credentials: 'same-origin'
+  });
+  if (res.status === 204 || res.status === 202) return null;
+  const data = await res.json().catch(() => ({}));
+  if (!res.ok) throw new Error(data.error || ('Request failed (' + res.status + ')'));
+  return data;
+}
+
+let messageTimer;
+function say(text, isError) {
+  const el = $('message');
+  el.textContent = text; el.className = isError ? 'error' : 'info';
+  clearTimeout(messageTimer);
+  messageTimer = setTimeout(() => { el.className = ''; }, isError ? 8000 : 3000);
+}
+
+function el(tag, attrs, ...children) {
+  const node = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (k === 'class') node.className = v; else if (k.startsWith('on')) node.addEventListener(k.slice(2), v); else node.setAttribute(k, v);
+  }
+  for (const c of children) node.append(c);
+  return node;
+}
+
+function age(seconds) {
+  if (seconds == null) return 'never';
+  if (seconds < 90) return seconds + 's ago';
+  if (seconds < 5400) return Math.round(seconds / 60) + ' min ago';
+  return Math.round(seconds / 3600) + ' h ago';
+}
+
+function render() {
+  const s = state.settings;
+  $('version').textContent = 'v' + state.version;
+  $('count').textContent = state.sources.length;
+  $('s-interval').value = s.refreshIntervalMinutes;
+  $('s-private').checked = s.allowPrivateFeeds;
+  $('s-listen').textContent = (s.bindAddress || 'all interfaces') + ' : ' + s.port;
+  $('password-hint').textContent = s.passwordFromEnv ? 'Set by the ADMIN_PASSWORD environment variable.' : (s.passwordSet ? 'A password is set (user name: admin).' : 'No password: anyone who can reach this page can change sources. Minimum 8 characters.');
+  $('s-clear-password').hidden = !(s.passwordSet && !s.passwordFromEnv);
+
+  const groups = $('groups'); groups.replaceChildren();
+  [...new Set(state.sources.map(x => x.group).filter(Boolean))].sort().forEach(g => groups.append(el('option', {value: g})));
+
+  const wrap = $('table-wrap'); wrap.replaceChildren();
+  if (!state.sources.length) { wrap.append(el('div', {class: 'empty'}, 'No sources yet. Add one above.')); return; }
+  const head = el('tr', {}, ...['Name', 'Group / categories', 'Feed URL', 'Feed path', 'Status', ''].map(t => el('th', {}, t)));
+  const body = el('tbody');
+  for (const src of state.sources) {
+    const status = el('td', {});
+    if (src.cached) status.append(el('div', {class: 'ok'}, 'Cached ' + age(src.ageSeconds)), el('div', {class: 'hint'}, Math.round(src.bytes / 1024) + ' KB · ' + src.hits + ' requests'));
+    else status.append(el('div', {class: src.lastError ? 'bad' : 'warn'}, src.lastError ? 'Not cached' : 'Fetching…'));
+    if (src.lastError) status.append(el('div', {class: 'bad hint'}, src.lastError));
+    const cats = el('div', {}, ...(src.categories || []).map(c => el('span', {class: 'pill'}, c)));
+    body.append(el('tr', {},
+      el('td', {}, el('strong', {}, src.name)),
+      el('td', {}, el('div', {class: 'hint'}, src.group || ''), cats),
+      el('td', {class: 'url'}, src.url),
+      el('td', {}, el('a', {href: src.proxyPath, target: '_blank', rel: 'noopener'}, el('code', {}, src.proxyPath))),
+      status,
+      el('td', {class: 'actions'},
+        el('button', {onclick: () => refreshOne(src.id)}, 'Refresh'), ' ',
+        el('button', {onclick: () => startEdit(src)}, 'Edit'), ' ',
+        el('button', {class: 'danger', onclick: () => remove(src)}, 'Remove'))));
+  }
+  wrap.append(el('table', {}, el('thead', {}, head), body));
+}
+
+async function load() {
+  try {
+    state = await api('GET', '/state'); render();
+    fetch('/health').then(r => r.json()).then(h => { $('health').textContent = '● healthy · up ' + Math.round(h.uptimeSeconds / 60) + ' min'; $('health').className = 'ver ok'; }).catch(() => { $('health').textContent = '● unreachable'; $('health').className = 'ver bad'; });
+  } catch (e) { say(e.message, true); }
+}
+
+function startEdit(src) {
+  editingId = src.id;
+  $('f-name').value = src.name; $('f-url').value = src.url; $('f-group').value = src.group || '';
+  $('f-categories').value = (src.categories || []).join(', ');
+  $('form-title').textContent = 'Edit news source'; $('f-save').textContent = 'Save changes'; $('f-cancel').hidden = false;
+  window.scrollTo({top: 0, behavior: 'smooth'}); $('f-name').focus();
+}
+function resetForm() {
+  editingId = null; $('source-form').reset();
+  $('form-title').textContent = 'Add a news source'; $('f-save').textContent = 'Add source'; $('f-cancel').hidden = true;
+}
+$('f-cancel').onclick = resetForm;
+
+$('source-form').onsubmit = async ev => {
+  ev.preventDefault();
+  const payload = {name: $('f-name').value, url: $('f-url').value, group: $('f-group').value, categories: $('f-categories').value.split(',')};
+  try {
+    if (editingId) await api('PUT', '/sources/' + encodeURIComponent(editingId), payload); else await api('POST', '/sources', payload);
+    say(editingId ? 'Source updated.' : 'Source added. It is being fetched now.');
+    resetForm(); await load(); setTimeout(load, 3000);
+  } catch (e) { say(e.message, true); }
+};
+
+async function remove(src) {
+  if (!confirm('Remove "' + src.name + '"? Widgets using it will stop showing this source.')) return;
+  try { await api('DELETE', '/sources/' + encodeURIComponent(src.id)); say('Source removed.'); if (editingId === src.id) resetForm(); load(); } catch (e) { say(e.message, true); }
+}
+async function refreshOne(id) {
+  try { await api('POST', '/sources/' + encodeURIComponent(id) + '/refresh'); say('Refreshed.'); } catch (e) { say(e.message, true); }
+  load();
+}
+$('refresh-all').onclick = async () => { try { await api('POST', '/refresh'); say('Refreshing all sources…'); setTimeout(load, 4000); } catch (e) { say(e.message, true); } };
+
+async function saveSettings(extra) {
+  try {
+    state = await api('PUT', '/settings', {refreshIntervalMinutes: parseInt($('s-interval').value, 10), allowPrivateFeeds: $('s-private').checked, ...extra});
+    $('s-password').value = ''; render(); say('Settings saved.');
+  } catch (e) { say(e.message, true); }
+}
+$('settings-form').onsubmit = ev => { ev.preventDefault(); saveSettings({newPassword: $('s-password').value}); };
+$('s-clear-password').onclick = () => { if (confirm('Remove the admin password? Anyone who can reach this page will be able to change settings.')) saveSettings({clearPassword: true}); };
+
+load(); setInterval(load, 30000);
+</script>
+</body>
+</html>

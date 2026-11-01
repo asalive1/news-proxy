@@ -1,0 +1,254 @@
+{
+    "version":  1,
+    "sources":  [
+                    {
+                        "id":  "bbc-news",
+                        "name":  "BBC News",
+                        "url":  "https://feeds.bbci.co.uk/news/rss.xml",
+                        "type":  "RSS",
+                        "group":  "National News",
+                        "categories":  [
+                                           "U.S. Headlines",
+                                           "Politics",
+                                           "Business",
+                                           "Technology",
+                                           "Science",
+                                           "Breaking News"
+                                       ],
+                        "aliases":  [
+                                        "bbc"
+                                    ]
+                    },
+                    {
+                        "id":  "npr-news",
+                        "name":  "NPR News",
+                        "url":  "https://feeds.npr.org/1001/rss.xml",
+                        "type":  "RSS",
+                        "group":  "National News",
+                        "categories":  [
+                                           "National Headlines",
+                                           "Politics",
+                                           "Public Affairs",
+                                           "Culture",
+                                           "Breaking News"
+                                       ],
+                        "aliases":  [
+                                        "npr"
+                                    ]
+                    },
+                    {
+                        "id":  "cbs-news",
+                        "name":  "CBS News",
+                        "url":  "https://www.cbsnews.com/latest/rss/main",
+                        "type":  "RSS",
+                        "group":  "National News",
+                        "categories":  [
+                                           "Breaking News",
+                                           "National News",
+                                           "Politics",
+                                           "Health",
+                                           "Consumer News"
+                                       ],
+                        "aliases":  [
+                                        "cbs"
+                                    ]
+                    },
+                    {
+                        "id":  "nbc-news",
+                        "name":  "NBC News",
+                        "url":  "https://feeds.nbcnews.com/feeds/topstories",
+                        "type":  "RSS",
+                        "group":  "National News",
+                        "categories":  [
+                                           "National Headlines",
+                                           "Politics",
+                                           "International News",
+                                           "Health",
+                                           "Business"
+                                       ],
+                        "aliases":  [
+                                        "nbc"
+                                    ]
+                    },
+                    {
+                        "id":  "bbc-world",
+                        "name":  "BBC World",
+                        "url":  "https://feeds.bbci.co.uk/news/world/rss.xml",
+                        "type":  "RSS",
+                        "group":  "World News",
+                        "categories":  [
+                                           "Global News",
+                                           "International Affairs",
+                                           "World Politics",
+                                           "Conflicts",
+                                           "Economics"
+                                       ]
+                    },
+                    {
+                        "id":  "variety",
+                        "name":  "Variety",
+                        "url":  "https://variety.com/feed/",
+                        "type":  "RSS",
+                        "group":  "Entertainment \u0026 Celebrity News",
+                        "categories":  [
+                                           "Celebrity News",
+                                           "Movies",
+                                           "Television",
+                                           "Streaming Services",
+                                           "Awards Shows"
+                                       ],
+                        "aliases":  [
+                                        "variety"
+                                    ]
+                    },
+                    {
+                        "id":  "billboard",
+                        "name":  "Billboard",
+                        "url":  "https://www.billboard.com/feed/",
+                        "type":  "RSS",
+                        "group":  "Entertainment \u0026 Celebrity News",
+                        "categories":  [
+                                           "Music Industry",
+                                           "Chart Rankings",
+                                           "Tour Announcements",
+                                           "Album Releases",
+                                           "Artist News"
+                                       ]
+                    },
+                    {
+                        "id":  "rolling-stone",
+                        "name":  "Rolling Stone",
+                        "url":  "https://www.rollingstone.com/feed/",
+                        "type":  "RSS",
+                        "group":  "Entertainment \u0026 Celebrity News",
+                        "categories":  [
+                                           "Music News",
+                                           "Entertainment",
+                                           "Celebrity Culture",
+                                           "Pop Culture",
+                                           "Artist Interviews"
+                                       ]
+                    },
+                    {
+                        "id":  "ars-technica",
+                        "name":  "Ars Technica",
+                        "url":  "https://feeds.arstechnica.com/arstechnica/index",
+                        "type":  "RSS",
+                        "group":  "Technology",
+                        "categories":  [
+                                           "Technology",
+                                           "Cybersecurity",
+                                           "Artificial Intelligence",
+                                           "Software",
+                                           "Hardware"
+                                       ]
+                    },
+                    {
+                        "id":  "techcrunch",
+                        "name":  "TechCrunch",
+                        "url":  "https://techcrunch.com/feed/",
+                        "type":  "RSS",
+                        "group":  "Technology",
+                        "categories":  [
+                                           "Startups",
+                                           "Venture Capital",
+                                           "Artificial Intelligence",
+                                           "Consumer Technology",
+                                           "Big Tech"
+                                       ],
+                        "aliases":  [
+                                        "techcrunch"
+                                    ]
+                    },
+                    {
+                        "id":  "nasa",
+                        "name":  "NASA",
+                        "url":  "https://www.nasa.gov/rss/dyn/breaking_news.rss",
+                        "type":  "RSS",
+                        "group":  "Science \u0026 Space",
+                        "categories":  [
+                                           "Space Exploration",
+                                           "Launches",
+                                           "Astronomy",
+                                           "NASA Missions",
+                                           "Scientific Discoveries"
+                                       ],
+                        "aliases":  [
+                                        "nasa"
+                                    ]
+                    },
+                    {
+                        "id":  "sciencedaily",
+                        "name":  "ScienceDaily",
+                        "url":  "https://www.sciencedaily.com/rss/top.xml",
+                        "type":  "RSS",
+                        "group":  "Science \u0026 Space",
+                        "categories":  [
+                                           "General Science",
+                                           "Medical Research",
+                                           "Environment",
+                                           "Physics",
+                                           "Technology"
+                                       ]
+                    },
+                    {
+                        "id":  "espn",
+                        "name":  "ESPN",
+                        "url":  "https://www.espn.com/espn/rss/news",
+                        "type":  "RSS",
+                        "group":  "Sports",
+                        "categories":  [
+                                           "NFL",
+                                           "MLB",
+                                           "NBA",
+                                           "NHL",
+                                           "College Sports"
+                                       ],
+                        "aliases":  [
+                                        "espn"
+                                    ]
+                    },
+                    {
+                        "id":  "cbs-sports",
+                        "name":  "CBS Sports",
+                        "url":  "https://www.cbssports.com/rss/headlines/",
+                        "type":  "RSS",
+                        "group":  "Sports",
+                        "categories":  [
+                                           "Professional Sports",
+                                           "College Sports",
+                                           "Scores",
+                                           "Trades",
+                                           "Player News"
+                                       ]
+                    },
+                    {
+                        "id":  "cnbc",
+                        "name":  "CNBC",
+                        "url":  "https://www.cnbc.com/id/100003114/device/rss/rss.html",
+                        "type":  "RSS",
+                        "group":  "Business",
+                        "categories":  [
+                                           "Markets",
+                                           "Business News",
+                                           "Economics",
+                                           "Investing",
+                                           "Financial Headlines"
+                                       ]
+                    },
+                    {
+                        "id":  "marketwatch",
+                        "name":  "MarketWatch",
+                        "url":  "https://feeds.content.dowjones.io/public/rss/mw_topstories",
+                        "type":  "RSS",
+                        "group":  "Business",
+                        "categories":  [
+                                           "Stock Market",
+                                           "Investing",
+                                           "Corporate News",
+                                           "Economics",
+                                           "Financial Analysis"
+                                       ]
+                    }
+                ]
+}

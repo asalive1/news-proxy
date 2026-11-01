@@ -1,0 +1,34 @@
+# News-Proxy for Linux (Ubuntu Server 24.04 + Docker).
+#   docker compose up -d   (always fetches and rebuilds the latest version from GitHub)
+# Then open http://<server>:7999/config
+services:
+  news-proxy:
+    # pull_policy: build makes every "up" re-fetch the main branch from GitHub and rebuild (cached when unchanged).
+    pull_policy: build
+    build:
+      context: https://github.com/asalive1/news-proxy.git#main
+      pull: true
+    image: news-proxy:latest
+    container_name: news-proxy
+    restart: unless-stopped
+    ports:
+      - "${NEWS_PROXY_PORT:-7999}:7999"
+    environment:
+      PORT: "7999"
+      # Optional: protects /config (user name: admin, minimum 8 characters).
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-}"
+      # First run only; afterwards change these in /config.
+      REFRESH_INTERVAL_MINUTES: "${REFRESH_INTERVAL_MINUTES:-10}"
+      ALLOW_PRIVATE_FEEDS: "${ALLOW_PRIVATE_FEEDS:-false}"
+      TZ: "${TZ:-UTC}"
+    volumes:
+      - news-proxy-data:/data
+#    networks:
+#      - nginx-proxy-manager_default   # uncomment to publish through Nginx Proxy Manager
+
+volumes:
+  news-proxy-data:
+
+# networks:
+#   nginx-proxy-manager_default:
+#     external: true
