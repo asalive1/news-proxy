@@ -24,6 +24,8 @@ type App struct {
 	dataDir string
 	cache   *Cache
 	client  *http.Client
+	adhoc   adhocCache
+	limiter rateLimiter
 	started time.Time
 	wake    chan struct{}
 

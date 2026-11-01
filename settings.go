@@ -36,6 +36,7 @@ type Settings struct {
 	BindAddress            string `json:"bindAddress"`
 	RefreshIntervalMinutes int    `json:"refreshIntervalMinutes"`
 	AllowPrivateFeeds      bool   `json:"allowPrivateFeeds"`
+	RelayDisabled          bool   `json:"relayDisabled,omitempty"`
 	AdminPasswordHash      string `json:"adminPasswordHash,omitempty"`
 }
 
@@ -75,7 +76,7 @@ type sourcesFile struct {
 var (
 	idPattern       = regexp.MustCompile(`^[a-z0-9][a-z0-9_-]{0,63}$`)
 	slugPattern     = regexp.MustCompile(`[^a-z0-9]+`)
-	reservedSources = map[string]bool{"health": true, "config": true, "feed": true, "sources.json": true, "favicon.ico": true}
+	reservedSources = map[string]bool{"health": true, "local": true, "relay": true, "config": true, "feed": true, "sources.json": true, "favicon.ico": true}
 )
 
 func slugify(text string) string {

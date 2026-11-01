@@ -170,3 +170,66 @@ func TestSettingsSanitize(t *testing.T) {
 	}
 	_ = os.Getenv
 }
+
+func TestZipResolvesToCity(t *testing.T) {
+	for zip, want := range map[string]string{"48220": "Ferndale, MI", "53703": "Madison, WI", "10001-1234": "New York, NY"} {
+		got, err := resolvePlace(zip)
+		if err != nil || got != want {
+			t.Errorf("%s: got %q, %v want %q", zip, got, err, want)
+		}
+	}
+	if _, err := resolvePlace("00000"); err == nil {
+		t.Error("unknown zip should fail")
+	}
+	if _, err := resolvePlace("a<script>"); err == nil {
+		t.Error("odd characters should be rejected")
+	}
+	if got, _ := resolvePlace("  Detroit,   Michigan "); got != "Detroit, Michigan" {
+		t.Errorf("got %q", got)
+	}
+}
+
+func TestRelayFetchesCachesAndHonoursToggle(t *testing.T) {
+	var hits int32
+	upstream := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		atomic.AddInt32(&hits, 1)
+		_, _ = w.Write([]byte(testFeed))
+	}))
+	defer upstream.Close()
+	_, h := newTestApp(t, true, nil)
+	path := "/relay?url=" + upstream.URL
+	first, second := do(h, "GET", path, "", nil), do(h, "GET", path, "", nil)
+	if first.Code != 200 || first.Header().Get("X-Cache-Status") != "MISS" || second.Header().Get("X-Cache-Status") != "HIT" || atomic.LoadInt32(&hits) != 1 {
+		t.Fatalf("codes %d/%d hits=%d", first.Code, second.Code, hits)
+	}
+	if first.Header().Get("Access-Control-Allow-Origin") != "*" {
+		t.Error("relay must allow cross-origin reads")
+	}
+	if c := do(h, "GET", "/relay?url=http://user:pw@example.com/feed", "", nil).Code; c != 400 {
+		t.Errorf("credentials in URL: %d", c)
+	}
+	if c := do(h, "GET", "/relay?url=file:///etc/passwd", "", nil).Code; c != 400 {
+		t.Errorf("file scheme: %d", c)
+	}
+	off := do(h, "PUT", "/config/api/settings", `{"refreshIntervalMinutes":10,"relayEnabled":false}`, map[string]string{"X-Requested-With": "news-proxy"})
+	if off.Code != 200 {
+		t.Fatalf("settings: %d %s", off.Code, off.Body.String())
+	}
+	if c := do(h, "GET", path, "", nil).Code; c != 403 {
+		t.Errorf("relay off: %d", c)
+	}
+}
+
+func TestRelayBlocksPrivateAddressesAndRateLimits(t *testing.T) {
+	_, h := newTestApp(t, false, nil)
+	if c := do(h, "GET", "/relay?url=http://127.0.0.1:1/x", "", nil).Code; c != 502 {
+		t.Errorf("private target: %d", c)
+	}
+	var last int
+	for i := 0; i < relayRateLimit+2; i++ {
+		last = do(h, "GET", "/relay?url=http://127.0.0.1:1/x", "", nil).Code
+	}
+	if last != 429 {
+		t.Errorf("rate limit: %d", last)
+	}
+}

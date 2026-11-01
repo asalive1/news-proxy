@@ -7,6 +7,8 @@ A small, self-contained service that caches news feeds (RSS/Atom) so widgets rea
 | `/health` | JSON health check (status, version, uptime, source counts, last/next refresh) |
 | `/config` | Web UI: add/edit/remove sources, set refresh interval, optional admin password |
 | `/sources.json` | Discovery document the widget downloads (id, name, url, group, categories, `proxyPath`) |
+| `/local?q=<ZIP or City, State>` | Local news (Google News) for one place; a ZIP is converted to its city. Per-user, not a configured source |
+| `/relay?url=<feed URL>` | Fetches and caches a user's own custom feed so the browser avoids CORS. On by default; turn off in `/config`. Rate limited, public hosts only unless private feeds are allowed, URLs are never logged |
 | `/feed/<id>` | Cached feed for a source (also `/<id>` and legacy aliases such as `/bbc`, `/npr`) |
 
 Sources added in `/config` (or by editing `sources.json`) are live within seconds: **no restart**. The cache refreshes every 10 minutes by default (configurable in `/config`). Cached content survives restarts and is served stale if an upstream is down.
@@ -55,3 +57,7 @@ Set the widget catalog's `proxyBase` to the proxy's URL (e.g. `http://server:799
 ## Build
 
 `powershell -ExecutionPolicy Bypass -File build.ps1` (needs Docker only) tests and produces `dist\News-Proxy-Setup.exe` and the `news-proxy` Docker image.
+
+## Attribution
+
+ZIP code data: GeoNames (https://www.geonames.org), licensed under Creative Commons Attribution 4.0.

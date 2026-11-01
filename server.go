@@ -19,6 +19,8 @@ func (a *App) routes() http.Handler {
 	mux.HandleFunc("/health", a.handleHealth)
 	mux.HandleFunc("/sources.json", a.handleSources)
 	mux.HandleFunc("/feed/{id}", a.handleFeed)
+	mux.HandleFunc("/local", a.handleLocal)
+	mux.HandleFunc("/relay", a.handleRelay)
 
 	mux.HandleFunc("/config", a.admin(a.handleConfigPage))
 	mux.HandleFunc("/config/{$}", a.admin(a.handleConfigPage))
@@ -293,6 +295,7 @@ func (a *App) handleState(w http.ResponseWriter, r *http.Request) {
 			"bindAddress":            s.BindAddress,
 			"refreshIntervalMinutes": s.RefreshIntervalMinutes,
 			"allowPrivateFeeds":      s.AllowPrivateFeeds,
+			"relayEnabled":           !s.RelayDisabled,
 			"passwordSet":            s.AdminPasswordHash != "" || a.envAdminSecret != "",
 			"passwordFromEnv":        a.envAdminSecret != "",
 		},
@@ -457,6 +460,7 @@ func (a *App) handleRefreshAll(w http.ResponseWriter, r *http.Request) {
 type settingsUpdate struct {
 	RefreshIntervalMinutes int    `json:"refreshIntervalMinutes"`
 	AllowPrivateFeeds      bool   `json:"allowPrivateFeeds"`
+	RelayEnabled           *bool  `json:"relayEnabled"`
 	NewPassword            string `json:"newPassword"`
 	ClearPassword          bool   `json:"clearPassword"`
 }
@@ -472,6 +476,9 @@ func (a *App) handleSettings(w http.ResponseWriter, r *http.Request) {
 	}
 	s := a.getSettings()
 	s.RefreshIntervalMinutes, s.AllowPrivateFeeds = in.RefreshIntervalMinutes, in.AllowPrivateFeeds
+	if in.RelayEnabled != nil {
+		s.RelayDisabled = !*in.RelayEnabled
+	}
 	switch {
 	case in.NewPassword != "":
 		if len(in.NewPassword) < 8 {

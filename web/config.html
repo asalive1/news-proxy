@@ -81,6 +81,7 @@
         <div><label>Listening on</label><div id="s-listen" class="hint" style="font-size:14px;color:inherit"></div><div class="hint">Set by the installer or the PORT / BIND_ADDRESS environment variables; changing it needs a service restart.</div></div>
       </div>
       <div class="row"><label style="font-weight:400"><input id="s-private" type="checkbox"> Allow private/internal feeds (localhost and LAN addresses)</label></div>
+      <div class="row"><label style="font-weight:400"><input id="s-relay" type="checkbox"> Relay users' own feeds (lets a widget read a custom feed through this service, avoiding browser CORS blocks)</label></div>
       <div class="row">
         <button class="primary" type="submit">Save settings</button>
         <button type="button" id="s-clear-password" class="danger" hidden>Remove admin password</button>
@@ -134,6 +135,7 @@ function render() {
   $('count').textContent = state.sources.length;
   $('s-interval').value = s.refreshIntervalMinutes;
   $('s-private').checked = s.allowPrivateFeeds;
+  $('s-relay').checked = s.relayEnabled;
   $('s-listen').textContent = (s.bindAddress || 'all interfaces') + ' : ' + s.port;
   $('password-hint').textContent = s.passwordFromEnv ? 'Set by the ADMIN_PASSWORD environment variable.' : (s.passwordSet ? 'A password is set (user name: admin).' : 'No password: anyone who can reach this page can change sources. Minimum 8 characters.');
   $('s-clear-password').hidden = !(s.passwordSet && !s.passwordFromEnv);
@@ -207,7 +209,7 @@ $('refresh-all').onclick = async () => { try { await api('POST', '/refresh'); sa
 
 async function saveSettings(extra) {
   try {
-    state = await api('PUT', '/settings', {refreshIntervalMinutes: parseInt($('s-interval').value, 10), allowPrivateFeeds: $('s-private').checked, ...extra});
+    state = await api('PUT', '/settings', {refreshIntervalMinutes: parseInt($('s-interval').value, 10), allowPrivateFeeds: $('s-private').checked, relayEnabled: $('s-relay').checked, ...extra});
     $('s-password').value = ''; render(); say('Settings saved.');
   } catch (e) { say(e.message, true); }
 }
